@@ -1,6 +1,6 @@
 const mysql = require('mysql');
 const inquirer = require('inquirer');
-require('console.table');
+const Table = require('easy-table');
 
 
 const connection = mysql.createConnection({
@@ -35,7 +35,21 @@ function displayTable() {
 
 		`)
 
-        console.table(results); //sooooo beautiful
+         var t = new Table;
+
+        results.forEach(function(product) {
+        	t.cell('Item', product.item_id);
+        	t.cell('Product', product.product_name);
+        	t.cell('Department', product.department_name);
+        	t.cell('Price', product.price, Table.number(2));
+        	t.cell('Quantity', product.stock_quantity)
+        	t.newRow();
+
+
+        });
+
+        console.log(t.toString());
+
 
 
 
@@ -51,23 +65,26 @@ function displayTable() {
         }]).then(function(answers) {
 
             connection.query("SELECT * FROM products WHERE item_id = " + answers.item_id, function(error, results) {
-                if (error) throw error;
+             try{
                 let currentPrice = results[0].price;
-                console.log(results[0].stock_quantity);
-                console.log(typeof(answers.quantity));
+                
 
                 if (results[0].stock_quantity < answers.quantity) {
+                	console.log("\n\n\n\n\n")
                     console.log("Insufficient quantity!");
                     displayTable();
                 } else {
                     connection.query("UPDATE products SET stock_quantity = stock_quantity - " + answers.quantity + " WHERE item_id = " + answers.item_id, function(error, results) {
                         console.log("Inventory Updated!");
-                        console.log("The total is: $" + (answers.quantity * currentPrice));
+                        console.log("Your total is: $" + (answers.quantity * currentPrice).toFixed(2));
                         console.log("Thank you for shopping!");
                         exitProgram();
                     });
                 }
-
+             }catch(e){
+             	console.log("There was an error with your bamazon request: ", e.message);
+             	exitProgram();
+             }
 
             })
         });
