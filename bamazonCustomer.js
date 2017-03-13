@@ -67,6 +67,7 @@ function displayTable() {
             connection.query("SELECT * FROM products WHERE item_id = " + answers.item_id, function(error, results) {
              try{
                 let currentPrice = results[0].price;
+                var total = (answers.quantity * currentPrice).toFixed(2)
                 
 
                 if (results[0].stock_quantity < answers.quantity) {
@@ -75,11 +76,17 @@ function displayTable() {
                     displayTable();
                 } else {
                     connection.query("UPDATE products SET stock_quantity = stock_quantity - " + answers.quantity + " WHERE item_id = " + answers.item_id, function(error, results) {
+                    	
                         console.log("Inventory Updated!");
-                        console.log("Your total is: $" + (answers.quantity * currentPrice).toFixed(2));
+                        console.log("Your total is: $" + total);
                         console.log("Thank you for shopping!");
-                        exitProgram();
-                    });
+                      });
+                     connection.query("UPDATE departments INNER JOIN products ON products.department_name = departments.department_name SET departments.product_sales = departments.product_sales + ? WHERE products.item_id = ?", [total, answers.item_id], function(error, results){
+                     	console.log("Department updated");
+                     	exitProgram();
+                     });
+                        
+                   
                 }
              }catch(e){
              	console.log("There was an error with your bamazon request: ", e.message);
@@ -90,12 +97,6 @@ function displayTable() {
         });
     });
 }
-
-
-
-
-
-
 
 
 

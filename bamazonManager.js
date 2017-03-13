@@ -79,11 +79,20 @@ function viewProd(param, callback){
 function viewLow(){
 
 	connection.query("Select * FROM products WHERE stock_quantity < 5", function(error, results) {
-		console.log("\n\n");
-        console.log("Low Inventory:")
-        console.log("\n\n");
-		if (error) throw error;
-		console.table(results);
+		 var t = new Table;
+
+        results.forEach(function(product) {
+        	t.cell('Item', product.item_id);
+        	t.cell('Product', product.product_name);
+        	t.cell('Department', product.department_name);
+        	t.cell('Price', product.price, Table.number(2));
+        	t.cell('Quantity', product.stock_quantity)
+        	t.newRow();
+
+
+        });
+
+        console.log(t.toString());
 		menuPrompt();
 	});
 
